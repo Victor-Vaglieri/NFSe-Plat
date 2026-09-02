@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: nfse-backend-python
+    env: python
+    buildCommand: "cd backend-python && pip install -r requirements.txt"
+    startCommand: "cd backend-python && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        sync: false # Requires manual setup in Render Dashboard (e.g. Supabase URL)
+      - key: SECRET_KEY
+        generateValue: true
