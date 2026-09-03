@@ -24,9 +24,6 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 import re
 
 def parse_nfs_e_data(raw_text: str) -> dict:
-    """
-    Extracts CNPJ, Total Value, and Invoice Number from the raw OCR text using Regular Expressions.
-    """
     data = {
         "invoice_number": None,
         "issuer_cnpj": None,
