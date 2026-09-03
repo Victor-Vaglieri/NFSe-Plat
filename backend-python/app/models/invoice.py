@@ -10,6 +10,7 @@ class Invoice(Base):
     tenant_id = Column(Integer, ForeignKey("tenants.id"), index=True)
     
     document_type = Column(String, default="NFS-e") # NF-e, NFS-e, CT-e
+    invoice_number = Column(String, index=True) # Added invoice number
     issuer_cnpj = Column(String, index=True)
     issuer_name = Column(String)
     recipient_cnpj = Column(String, index=True)
