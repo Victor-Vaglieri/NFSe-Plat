@@ -25,7 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.api import auth, invoices
+
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(invoices.router, prefix=f"{settings.API_V1_STR}/invoices", tags=["invoices"])
 
 @app.get("/")
 def read_root():
