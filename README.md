@@ -19,21 +19,22 @@ O **NFSe SaaS Platform** atua como um sistema centralizador e gerenciador de not
 
 ## 3. Tecnologias e Ferramentas (Stack)
 
-* **Frontend (Next.js 14 / React):** Interface de usuário com painel de controle SaaS, utilizando TypeScript e Tailwind CSS.
-* **Backend A (Python 3.12 / FastAPI):** Construção rápida e ideal para integração com bibliotecas nativas de Inteligência Artificial e OCR.
+* **Frontend (Next.js 14 / React):** Interface de usuário com painel de controle SaaS, utilizando TypeScript e Tailwind CSS v4.
+* **Backend A (Python 3.12 / FastAPI):** Construção rápida e ideal para integração com bibliotecas nativas de manipulação de PDF e OCR.
 * **Backend B (Java 21 / Spring Boot 3):** Reconstrução do backend para alta escalabilidade e tipagem forte em ambiente enterprise.
-* **Módulo OCR:** Tesseract (Pytesseract / Tesseract4J) e `pdf2image`.
-* **Banco de Dados:** PostgreSQL via SQLAlchemy (Python) e Hibernate (Java).
+* **Módulo OCR:** `PyMuPDF` (extração digital direta) com fallback para `pytesseract` (notas escaneadas).
+* **Banco de Dados:** Padrão Microserviços (Auth DB e App DB) utilizando SQLite/PostgreSQL via SQLAlchemy (Python).
 
 ## 4. Estrutura do Projeto
 
 ```text
 NFSe/
-├── frontend/             # Aplicação Next.js (Dashboard e Painel SaaS)
-│   ├── app/              # Rotas da aplicação web
-│   └── components/       # Componentes React reutilizáveis
+├── frontend/             # Aplicação Next.js (Dashboard, UI SaaS Dark/Light mode)
+│   ├── src/app/          # Rotas da aplicação web (Login, Register, Dashboard)
+│   └── public/           # Assets
 ├── backend-python/       # API Core e Worker de OCR em Python
-│   ├── app/              # Lógica de negócio, Rotas e Modelos (FastAPI)
+│   ├── app/              # Lógica de negócio, Rotas, Modelos e Serviços (FastAPI)
+│   ├── uploads/          # Diretório local para visualização dos PDFs armazenados
 │   └── requirements.txt  # Dependências Python
 └── backend-java/         # (Fase 2) API Core em Java Spring Boot
 ```
@@ -43,14 +44,17 @@ NFSe/
 ```mermaid
 flowchart TD
     UI[Frontend Next.js] --> |REST API| API{API Gateway / Controller}
-    API --> |CRUD & Auth| DB[(PostgreSQL Multitenant)]
+    API --> |CRUD & Auth| AuthDB[(Banco: Auth)]
+    API --> |Isolamento Tenant| AppDB[(Banco: App Invoices)]
     
-    API --> |Upload PDF NFS-e| OCREngine[Serviço de OCR]
-    OCREngine --> |pdf2image| Tesseract(Tesseract OCR Engine)
-    Tesseract --> |Raw Text| Parser[Heurísticas / RegEx]
-    Parser --> |JSON Extraído| DB
+    API --> |Upload PDF NFS-e/NF-e| OCREngine[Serviço de OCR]
+    OCREngine --> |PyMuPDF| NativeText(Extração de Texto Digital Nativo)
+    NativeText -.-> |Fallback se escaneado| Tesseract(Tesseract OCR Engine)
+    NativeText --> Parser[Heurísticas / RegEx Inteligente]
+    Tesseract --> Parser
+    Parser --> |JSON Extraído| AppDB
     
-    ERP[Sistemas Parceiros] --> |GET /api/v1/invoices| API
+    ERP[Sistemas Parceiros] --> |GET /api/v1/integration/invoices| API
 ```
 
 ## 6. Execução
@@ -58,8 +62,8 @@ flowchart TD
 ### Pré-requisitos
 * **Node.js (>= 20)**
 * **Python (>= 3.12)** ou **Java (>= 21)**
-* **Tesseract OCR** instalado no Sistema Operacional e no PATH.
-* **PostgreSQL** ou **SQLite** (para ambiente de desenvolvimento local).
+* **Tesseract OCR** instalado no Sistema Operacional e no PATH (apenas para fallback).
+* (Opcional) **PostgreSQL** (configurado para nuvem via `.env`) ou **SQLite** nativo.
 
 ### Passo a Passo
 
@@ -75,24 +79,26 @@ flowchart TD
     python -m venv venv
     venv\Scripts\activate # Windows
     pip install -r requirements.txt
-    uvicorn app.main:app --reload
+    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ```
 
 ## 7. Funcionalidades Administrativas
-- **Painel Multitenant:** Cadastro de empresas e isolamento de acessos.
-- **Upload de Notas:** Envio manual de NFS-e (PDF) e acompanhamento em tempo real da extração via OCR.
-- **Auditoria:** Rastreabilidade e logs de ações dos usuários dentro da plataforma.
+- **Painel Multitenant:** Dashboard completo com modo escuro, resumo financeiro, geração de relatório PDF da tabela e botão de visualizar PDF.
+- **Microserviço de Autenticação:** Separação física e lógica de usuários/tenants (AuthDB) dos dados da aplicação (AppDB).
+- **Upload Híbrido:** Extração veloz de metadados como Data de Emissão, Descrição do Serviço, CNPJ e Valor Total, adaptável tanto a boletos escaneados quanto a PDFs digitais puros (DANFE).
+- **Integração M2M:** API Key gerada para sistemas ERP de terceiros consumirem notas fiscais sem interação humana.
 
 ## 8. Motivação e Escolhas Arquiteturais (Trade-offs)
 
-* **Solução OCR Open-Source vs Nuvem Comercial:** A escolha pelo **Tesseract** no lugar de ferramentas como AWS Textract se deu pela decisão de custo zero operacional e pelo desafio técnico de implementar heurísticas e RegEx capazes de lidar com a enorme heterogeneidade dos layouts de notas fiscais municipais do Brasil.
-* **FastAPI Inicial vs Spring Boot:** A escolha de começar o projeto com **FastAPI (Python)** deve-se à imbatível sinergia da linguagem com bibliotecas de visão computacional e OCR (como `pytesseract` e OpenCV). O porte posterior para **Spring Boot** demonstra o domínio sobre a transição de um ecossistema rápido de prototipagem para um ecossistema maduro enterprise.
+* **Abordagem Híbrida no OCR vs Nuvem Comercial:** Em vez de depender do AWS Textract, implementamos `PyMuPDF` para leitura instantânea de PDFs gerados digitalmente (90% dos casos reais). O OCR `Tesseract` atua apenas como *fallback* de processamento para documentos escaneados, reduzindo custos e latência computacional.
+* **Bancos de Dados Separados (Microservices):** Optou-se por separar a base de autenticação (`auth.db`) da base de arquivos (`nfse.db`). Essa escolha arquitetural facilita integrações futuras, como escalar a base de notas horizontalmente mantendo um serviço único e leve para centralização de contas, APIs e Tenants.
+* **FastAPI Inicial vs Spring Boot:** A escolha de começar o projeto com **FastAPI (Python)** deve-se à sinergia da linguagem com bibliotecas de visão computacional. O porte posterior para **Spring Boot** demonstra o domínio sobre a transição de um ecossistema de Inteligência Artificial para um ecossistema maduro corporativo.
 
 ## 9. Desafios Enfrentados e Soluções
 
-* **Extração de Dados em Layouts Variados de NFS-e:**
-  * *Desafio:* Cada prefeitura do Brasil formata sua NFS-e de maneira diferente.
-  * *Solução:* Abordagem baseada na transformação do PDF em imagem (`pdf2image`) para evitar bloqueios de cópia, seguida pela extração integral do texto, combinada com "Regex Matching" focado em termos chave universais ("CNPJ Tomador", "Valor Total", "ISS").
-* **SaaS Multitenancy em Aplicações Duplas:**
-  * *Desafio:* O isolamento dos dados de diferentes empresas no mesmo banco usando dois frameworks distintos (SQLAlchemy e Hibernate).
-  * *Solução:* Adoção de uma coluna `tenant_id` padronizada em nível de banco de dados, protegendo o acesso diretamente nas camadas de repositório de ambos os backends através do contexto do Token JWT.
+* **Extração de Dados em Layouts Variados de NFS-e e NF-e:**
+  * *Desafio:* Cada prefeitura do Brasil e formato (Produto vs Serviço) apresenta um layout diferente. Ferramentas legadas como `pdf2image` falhavam frequentemente no Windows devido à dependência do Poppler.
+  * *Solução:* Substituição pelo `PyMuPDF`, extração via blocos e utilização de "Regex Matching" agressivo focado em termos chaves e padrões matemáticos universais (ex: identificação do maior valor financeiro na página para a tag "Total_Value").
+* **SaaS Multitenancy Seguro e Robusto:**
+  * *Desafio:* O isolamento dos dados de diferentes empresas e vazamentos acidentais.
+  * *Solução:* Adoção de arquitetura Multi-Database. Injeção de dependência rigorosa do SQLAlchemy com duas Engines separadas. O Tenant_id via JWT cruza os bancos apenas sob demanda e proteção.
