@@ -5,7 +5,7 @@ psycopg2-binary
 pydantic
 pydantic-settings
 pytesseract
-pdf2image
+pymupdf
 python-multipart
 pyjwt
 passlib
