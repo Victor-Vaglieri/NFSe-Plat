@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.database import Base
+from app.database import BaseAuth
 
-class User(Base):
+class User(BaseAuth):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
