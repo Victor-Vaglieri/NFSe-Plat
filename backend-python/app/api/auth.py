@@ -1,7 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.database import get_db_auth
 from app.core import security
 from app.models.user import User
 from app.models.tenant import Tenant
@@ -10,7 +10,7 @@ from app.schemas.user import UserCreate, UserLogin, Token, UserResponse
 router = APIRouter()
 
 @router.post("/register", response_model=UserResponse)
-def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
+def register_user(user_in: UserCreate, db: Session = Depends(get_db_auth)):
     # Check if user exists
     user = db.query(User).filter(User.email == user_in.email).first()
     if user:
@@ -41,7 +41,7 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
     return user
 
 @router.post("/login", response_model=Token)
-def login_access_token(user_in: UserLogin, db: Session = Depends(get_db)):
+def login_access_token(user_in: UserLogin, db: Session = Depends(get_db_auth)):
     # Authenticate
     user = db.query(User).filter(User.email == user_in.email).first()
     if not user or not security.verify_password(user_in.password, user.hashed_password):

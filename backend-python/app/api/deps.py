@@ -4,14 +4,14 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from sqlalchemy.orm import Session
 from app.core.config import settings
-from app.database import get_db
+from app.database import get_db_auth
 from app.models.user import User
 from app.schemas.user import TokenPayload
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db_auth), token: str = Depends(oauth2_scheme)
 ) -> User:
     try:
         payload = jwt.decode(
