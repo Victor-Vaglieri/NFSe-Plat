@@ -102,3 +102,10 @@ flowchart TD
 * **SaaS Multitenancy Seguro e Robusto:**
   * *Desafio:* O isolamento dos dados de diferentes empresas e vazamentos acidentais.
   * *Solução:* Adoção de arquitetura Multi-Database. Injeção de dependência rigorosa do SQLAlchemy com duas Engines separadas. O Tenant_id via JWT cruza os bancos apenas sob demanda e proteção.
+
+## 10. Próximos Passos (TODO)
+
+* **[Fase 2] Implementação em Java Spring Boot:** Iniciar a conversão da API e do ecossistema de negócio em Python para Java 21, mantendo a interoperabilidade com o Frontend em Next.js.
+* **[Fase 3] Fluxo de Contratos e Ordens de Serviço (OS):** Implementar funcionalidade de relacionamento entre Contratos, OS e Notas Fiscais, refletindo o fluxo real contábil.
+* **[Fase 4] Emissor (Faturador) de NFS-e Padrão Nacional:** Evoluir a plataforma de uma ferramenta de leitura (Inbound) para um emissor fiscal (Outbound). Integração com as APIs da Receita Federal para geração de DPS, assinatura com Certificado Digital A1 e emissão da NFS-e Nacional, centralizando a operação financeira das empresas.
+* **Integração HTR / Vision LLM para Manuscritos:** Estudar a implementação de chamadas a modelos fundacionais (ex: OpenAI Vision, Gemini 1.5 Pro) para leitura de Ordens de Serviço preenchidas à mão com caneta, onde o OCR clássico baseado em regras apresenta severas limitações.
