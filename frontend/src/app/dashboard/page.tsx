@@ -5,12 +5,25 @@ import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [result, setResult] = useState<any>(null);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,39 +62,41 @@ export default function DashboardPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (files.length === 0) return;
 
     setLoading(true);
     setMessage("");
     setResult(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const token = localStorage.getItem("token");
+    let successCount = 0;
+    let errorCount = 0;
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/v1/invoices/upload", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: formData,
-      });
+    for (const f of files) {
+      const formData = new FormData();
+      formData.append("file", f);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        if (res.status === 401) handleLogout();
-        throw new Error(errorData.detail || "Erro ao fazer upload da nota");
+      try {
+        const res = await fetch("http://localhost:8000/api/v1/invoices/upload", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) handleLogout();
+          throw new Error();
+        }
+        successCount++;
+      } catch (err: any) {
+        errorCount++;
       }
-
-      const data = await res.json();
-      setMessage("Upload e processamento concluídos com sucesso!");
-      setResult(data.extracted_data);
-      
-      if (token) fetchInvoices(token);
-    } catch (err: any) {
-      setMessage(`Erro: ${err.message}`);
-    } finally {
-      setLoading(false);
     }
+
+    setMessage(`Upload concluído! ${successCount} notas processadas. ${errorCount > 0 ? `(${errorCount} erros)` : ''}`);
+    if (token) fetchInvoices(token);
+    setFiles([]);
+    setLoading(false);
   };
 
   // Summary Math
@@ -99,7 +114,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setDarkMode(!darkMode)} 
+              onClick={toggleDarkMode} 
               className="text-sm p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors dark:text-white"
               title="Alternar Tema"
             >
@@ -114,67 +129,82 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-8 max-w-[1920px] mx-auto w-full grid grid-cols-1 xl:grid-cols-4 gap-6 text-gray-800 dark:text-gray-100">
+        <main className="flex-1 p-4 sm:p-8 max-w-[1920px] mx-auto w-full grid grid-cols-1 xl:grid-cols-4 gap-8 text-gray-800 dark:text-gray-100">
           
           {/* Resumo e Relatório */}
-          <div className="xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total de Notas</p>
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+          <div className="xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-8 mb-4">
+            
+            {/* Card: Total de Notas */}
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Total de Notas</p>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </div>
               </div>
-              <h3 className="text-4xl font-bold mt-4">{totalInvoices}</h3>
+              <h3 className="text-5xl font-extrabold text-gray-800 dark:text-white">{totalInvoices}</h3>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Valor Processado</p>
-                <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+            
+            {/* Card: Valor Processado */}
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Valor Processado</p>
+                <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
               </div>
-              <h3 className="text-4xl font-bold text-green-600 dark:text-green-400 mt-4">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
+              <h3 className="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tight">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
             </div>
-            <div className="p-6 flex flex-col justify-center items-center print:hidden h-full">
-               <button onClick={() => window.print()} className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-4 px-6 rounded-xl w-full h-full flex items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                 </svg>
-                 Gerar Relatório (PDF)
-               </button>
-            </div>
+            
+            {/* Card: Botão de PDF */}
+            <button 
+              onClick={() => window.print()} 
+              className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all flex flex-col items-center justify-center gap-3 print:hidden border border-indigo-400 dark:border-indigo-500 w-full h-full"
+            >
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-10 h-10 group-hover:-translate-y-1 transition-transform">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              <span className="text-xl font-bold tracking-wide">Gerar Relatório (PDF)</span>
+            </button>
+            
           </div>
 
           {/* Lado Esquerdo: Área de Upload */}
           <div className="xl:col-span-1 print:hidden">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-6">
-              <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">Nova Nota (OCR)</h2>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-8">
+              <h2 className="text-2xl font-extrabold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                Nova Nota
+              </h2>
               
-              <form onSubmit={handleUpload} className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors cursor-pointer relative">
+              <form onSubmit={handleUpload} className="space-y-6">
+                <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer relative group ${files.length > 0 ? 'border-blue-400 bg-blue-50/50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                   <input
                     type="file"
                     accept="application/pdf"
-                    onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    multiple
+                    onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-                    <span className="text-sm text-gray-500 dark:text-gray-300 font-medium truncate max-w-full">
-                      {file ? file.name : "Clique ou arraste um PDF aqui"}
+                  <div className="flex flex-col items-center justify-center space-y-3 relative z-0">
+                    <svg className={`w-12 h-12 transition-colors ${files.length > 0 ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500 group-hover:text-blue-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" /></svg>
+                    <span className={`text-sm font-semibold truncate max-w-full px-2 ${files.length > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      {files.length > 0 
+                        ? `${files.length} arquivo(s) selecionado(s)` 
+                        : "Clique ou arraste PDFs aqui"}
                     </span>
                   </div>
                 </div>
                 
                 <button
                   type="submit"
-                  disabled={!file || loading}
-                  className={`w-full py-3 px-4 rounded-xl font-bold text-white shadow-sm transition-all ${
-                    !file || loading ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                  disabled={files.length === 0 || loading}
+                  className={`w-full py-4 px-4 rounded-xl font-bold text-white shadow-sm transition-all text-lg ${
+                    files.length === 0 || loading ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:-translate-y-0.5"
                   }`}
                 >
-                  {loading ? "Robô Analisando..." : "Processar Documento"}
+                  {loading ? "Processando..." : "Enviar PDFs"}
                 </button>
               </form>
 
@@ -183,7 +213,6 @@ export default function DashboardPage() {
                   {message}
                 </div>
               )}
-
               {result && (
                 <div className="mt-8 border-t dark:border-gray-700 pt-6">
                   <h3 className="text-sm font-bold mb-3 uppercase tracking-wider text-gray-500 dark:text-gray-400">Dados Extraídos</h3>
@@ -205,7 +234,7 @@ export default function DashboardPage() {
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-900/50 border-b dark:border-gray-700">
                       <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Número</th>
-                      <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Emissão</th>
+                      <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Datas</th>
                       <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">CNPJ</th>
                       <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-2/5">Descrição</th>
                       <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Valor</th>
@@ -222,7 +251,12 @@ export default function DashboardPage() {
                       invoices.map((inv) => (
                         <tr key={inv.id} className="border-b dark:border-gray-700 hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors">
                           <td className="p-4 text-sm font-medium">{inv.invoice_number || "-"}</td>
-                          <td className="p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{inv.issue_date ? new Date(inv.issue_date).toLocaleDateString("pt-BR") : "-"}</td>
+                          <td className="p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-gray-700 dark:text-gray-300">Lançamento: {new Date(inv.created_at).toLocaleDateString("pt-BR")}</span>
+                              <span className="text-xs">Emissão: {inv.issue_date ? new Date(inv.issue_date).toLocaleDateString("pt-BR") : "-"}</span>
+                            </div>
+                          </td>
                           <td className="p-4 text-sm font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{inv.issuer_cnpj || "-"}</td>
                           <td className="p-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-[300px] xl:max-w-none break-words">
                             <div className="max-h-24 overflow-y-auto pr-2 custom-scrollbar">
