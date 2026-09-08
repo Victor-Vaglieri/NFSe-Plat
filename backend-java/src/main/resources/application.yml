@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: nfse-saas
+server:
+  port: 8080
+
+# Multi-Database Configuration for SQLite (Shared with Python)
+app:
+  datasource:
+    auth:
+      jdbc-url: jdbc:sqlite:C:/Users/victo/Desktop/NFSe/backend-python/auth.db
+      driver-class-name: org.sqlite.JDBC
+    app:
+      jdbc-url: jdbc:sqlite:C:/Users/victo/Desktop/NFSe/backend-python/nfse.db
+      driver-class-name: org.sqlite.JDBC
+
+jwt:
+  secret: supersecretkey-change-this-in-production
+  expiration: 10080000 # 7 days in ms
