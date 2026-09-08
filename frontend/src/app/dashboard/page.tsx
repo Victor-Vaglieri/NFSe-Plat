@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const fetchInvoices = async (token: string) => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/invoices/", {
+      const res = await fetch("http://localhost:8080/api/v1/invoices/", {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       formData.append("file", f);
 
       try {
-        const res = await fetch("http://localhost:8000/api/v1/invoices/upload", {
+        const res = await fetch("http://localhost:8080/api/v1/invoices/upload", {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` },
           body: formData,
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                           </td>
                           <td className="p-4 text-center print:hidden">
                             {inv.file_path && (
-                              <a href={`http://localhost:8000/${inv.file_path.replace('\\', '/')}`} target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium text-sm flex items-center justify-center gap-1">
+                              <a href={`http://localhost:8080/${inv.file_path.replace('\\', '/')}`} target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium text-sm flex items-center justify-center gap-1">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                 Abrir
                               </a>

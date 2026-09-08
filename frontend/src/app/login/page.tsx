@@ -13,16 +13,24 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
+    // TODO: trocar por variavel de ambiente em todas as chamadas de API
     try {
-      const res = await fetch("http://localhost:8000/api/v1/auth/login", {
+      const res = await fetch("http://localhost:8080/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Erro ao fazer login");
+        const text = await res.text();
+        let errorMessage = "Erro ao fazer login";
+        try {
+          const data = JSON.parse(text);
+          errorMessage = data.detail || data.message || errorMessage;
+        } catch (e) {
+          errorMessage = `Erro HTTP ${res.status}: Servidor não retornou JSON.`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
