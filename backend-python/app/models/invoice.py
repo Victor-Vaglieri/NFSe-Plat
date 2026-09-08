@@ -6,7 +6,6 @@ class Invoice(BaseApp):
     __tablename__ = "invoices"
 
     id = Column(Integer, primary_key=True, index=True)
-    # No ForeignKey because tenants table is in a different database! (Microservice pattern)
     tenant_id = Column(Integer, index=True)
     
     document_type = Column(String, default="NFS-e") # NF-e, NFS-e, CT-e
@@ -14,7 +13,7 @@ class Invoice(BaseApp):
     issuer_cnpj = Column(String, index=True)
     issuer_name = Column(String)
     recipient_cnpj = Column(String, index=True)
-    description = Column(String) # O que o documento representa
+    description = Column(String)
     
     total_value = Column(Float)
     issue_date = Column(DateTime)

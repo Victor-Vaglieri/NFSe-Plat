@@ -26,7 +26,7 @@ async def upload_invoice(
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Somente arquivos PDF são aceitos.")
 
-    # 1. Save file locally (Simulating S3 bucket storage)
+    # TODO: ImplementS3 bucket storage
     unique_filename = f"{uuid.uuid4()}_{file.filename}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     

@@ -11,8 +11,7 @@ from app.schemas.user import TokenPayload
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 def get_current_user(
-    db: Session = Depends(get_db_auth), token: str = Depends(oauth2_scheme)
-) -> User:
+    db: Session = Depends(get_db_auth), token: str = Depends(oauth2_scheme)) -> User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=["HS256"]

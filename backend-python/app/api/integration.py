@@ -19,7 +19,7 @@ def get_tenant_by_api_key(
     if not api_key_header:
         raise HTTPException(status_code=401, detail="API Key header missing")
         
-    # In a real app, hash the incoming key and compare with DB. 
+    # TODO: In a real app, hash the incoming key and compare with DB. 
     # For MVP, we'll assume the header matches the key exactly.
     api_key_record = db_auth.query(APIKey).filter(APIKey.key_hash == api_key_header, APIKey.is_active == True).first()
     
