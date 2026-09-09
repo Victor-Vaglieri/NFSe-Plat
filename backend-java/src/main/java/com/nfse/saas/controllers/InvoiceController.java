@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -28,6 +29,9 @@ public class InvoiceController {
 
     @Autowired
     private PdfExtractionService pdfService;
+
+    @Value("${app-config.upload-dir}")
+    private String uploadDirConfig;
 
     @GetMapping("/")
     public ResponseEntity<List<Invoice>> getInvoices() {
@@ -48,7 +52,7 @@ public class InvoiceController {
         }
 
         try {
-            File uploadDir = new File("uploads").getAbsoluteFile();
+            File uploadDir = new File(uploadDirConfig).getAbsoluteFile();
             if (!uploadDir.exists()) uploadDir.mkdirs();
 
             String uniqueFilename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();

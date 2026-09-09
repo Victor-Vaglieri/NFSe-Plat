@@ -64,4 +64,8 @@ Thumbs.db
 
 plan.md
 56+00012+26+05+-+PE+240-2026+-+software+NFs.pdf
-backend-python/uploads/*.pdf
+
+# Diretórios centralizados de Storage e Banco de Dados
+uploads/
+auth.db
+nfse.db

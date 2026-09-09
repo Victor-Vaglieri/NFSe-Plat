@@ -8,10 +8,13 @@ class Settings(BaseSettings):
     
     # Database Configuration for Microservices/Separation pattern
     # 1. Auth Database (Users, Tenants, API Keys)
-    AUTH_DATABASE_URL: str = "sqlite:///./auth.db"
+    AUTH_DATABASE_URL: str = "sqlite:///../auth.db"
     
     # 2. Application Database (Invoices, OCR data)
-    APP_DATABASE_URL: str = "sqlite:///./nfse.db"
+    APP_DATABASE_URL: str = "sqlite:///../nfse.db"
+
+    # 3. Uploads directory
+    UPLOAD_DIR: str = "../uploads"
 
     class Config:
         case_sensitive = True

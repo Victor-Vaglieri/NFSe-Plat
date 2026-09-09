@@ -1,19 +1,28 @@
 spring:
   application:
     name: nfse-saas
-server:
-  port: 8080
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
 
-# Multi-Database Configuration for SQLite (Shared with Python)
+server:
+  port: ${SERVER_PORT:8080}
+
 app:
   datasource:
     auth:
-      jdbc-url: jdbc:sqlite:C:/Users/victo/Desktop/NFSe/backend-python/auth.db
+      jdbc-url: ${DB_AUTH_URL:jdbc:sqlite:C:/Users/victo/Desktop/NFSe/auth.db}
       driver-class-name: org.sqlite.JDBC
     app:
-      jdbc-url: jdbc:sqlite:C:/Users/victo/Desktop/NFSe/backend-python/nfse.db
+      jdbc-url: ${DB_APP_URL:jdbc:sqlite:C:/Users/victo/Desktop/NFSe/nfse.db}
       driver-class-name: org.sqlite.JDBC
 
 jwt:
-  secret: supersecretkey-change-this-in-production
-  expiration: 10080000 # 7 days in ms
+  secret: ${JWT_SECRET:supersecretkey-change-this-in-production}
+  expiration: ${JWT_EXPIRATION_MS:10080000}
+
+# Pasta de uploads customizável
+app-config:
+  upload-dir: ${UPLOAD_DIR:C:/Users/victo/Desktop/NFSe/uploads}

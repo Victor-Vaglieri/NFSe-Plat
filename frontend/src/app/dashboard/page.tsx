@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   const fetchInvoices = async (token: string) => {
     try {
-      const res = await fetch("http://localhost:8080/api/v1/invoices/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       formData.append("file", f);
 
       try {
-        const res = await fetch("http://localhost:8080/api/v1/invoices/upload", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/upload`, {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` },
           body: formData,

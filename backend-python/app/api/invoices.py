@@ -11,9 +11,11 @@ from app.models.user import User
 from app.models.invoice import Invoice
 from app.services.ocr import extract_text_from_pdf, parse_nfs_e_data
 
+from app.core.config import settings
+
 router = APIRouter()
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = settings.UPLOAD_DIR
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
