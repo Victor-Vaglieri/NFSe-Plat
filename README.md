@@ -8,104 +8,120 @@ O **NFSe SaaS Platform** atua como um sistema centralizador e gerenciador de not
 
 ### Objetivos do Projeto
 1. **Captura Automatizada:** Integração com prefeituras e SEFAZ para coleta de notas fiscais.
-2. **Leitura OCR (Optical Character Recognition):** Extração de dados cruciais (CNPJ, Valor, etc.) de PDFs de notas fiscais de serviço (NFS-e) de prefeituras sem webservice aberto.
+2. **Leitura OCR / Extração de Texto:** Extração de dados cruciais (CNPJ, Valor, etc.) de PDFs de notas fiscais de serviço (NFS-e) de prefeituras sem webservice aberto.
 3. **Arquitetura Multitenant (SaaS):** Isolamento total de dados entre diferentes empresas/clientes no mesmo banco de dados.
 4. **Integração ERP:** API RESTful robusta para alimentação de sistemas contábeis parceiros.
 
 ## 2. Ciclo de Desenvolvimento (Fases)
 
-1. **Fase 1 (Python First):** Validação da arquitetura multitenant e da extração OCR complexa utilizando o ecossistema Python (FastAPI + Pytesseract).
-2. **Fase 2 (Portabilidade Java):** Reconstrução exata do contrato de API utilizando Java 21 e Spring Boot, comprovando proficiência técnica em múltiplas linguagens corporativas.
+1. **Fase 1 (Python First) - CONCLUÍDA:** Validação da arquitetura multitenant e da extração OCR complexa utilizando o ecossistema Python (FastAPI + Pytesseract).
+2. **Fase 2 (Portabilidade Java) - CONCLUÍDA:** Reconstrução exata do contrato de API utilizando Java 21 e Spring Boot, comprovando proficiência técnica em múltiplas linguagens corporativas e extração nativa via Apache PDFBox.
 
 ## 3. Tecnologias e Ferramentas (Stack)
 
 * **Frontend (Next.js 14 / React):** Interface de usuário com painel de controle SaaS, utilizando TypeScript e Tailwind CSS v4.
-* **Backend A (Python 3.12 / FastAPI):** Construção rápida e ideal para integração com bibliotecas nativas de manipulação de PDF e OCR.
-* **Backend B (Java 21 / Spring Boot 3):** Reconstrução do backend para alta escalabilidade e tipagem forte em ambiente enterprise.
-* **Módulo OCR:** `PyMuPDF` (extração digital direta) com fallback para `pytesseract` (notas escaneadas).
-* **Banco de Dados:** Padrão Microserviços (Auth DB e App DB) utilizando SQLite/PostgreSQL via SQLAlchemy (Python).
+* **Backend A (Python 3.12 / FastAPI):** Construção rápida e ideal para integração com bibliotecas nativas de manipulação de PDF e OCR (`PyMuPDF`, `pytesseract`).
+* **Backend B (Java 21 / Spring Boot 3):** Reconstrução do backend para alta escalabilidade e tipagem forte em ambiente enterprise. Utiliza `Apache PDFBox`.
+* **Banco de Dados:** Padrão Microserviços (Auth DB e App DB) utilizando SQLite/PostgreSQL, mapeados via SQLAlchemy (Python) e Hibernate/JPA (Java).
 
 ## 4. Estrutura do Projeto
 
 ```text
 NFSe/
 ├── frontend/             # Aplicação Next.js (Dashboard, UI SaaS Dark/Light mode)
-│   ├── src/app/          # Rotas da aplicação web (Login, Register, Dashboard)
-│   └── public/           # Assets
 ├── backend-python/       # API Core e Worker de OCR em Python
-│   ├── app/              # Lógica de negócio, Rotas, Modelos e Serviços (FastAPI)
-│   ├── uploads/          # Diretório local para visualização dos PDFs armazenados
-│   └── requirements.txt  # Dependências Python
-└── backend-java/         # (Fase 2) API Core em Java Spring Boot
+├── backend-java/         # API Core em Java Spring Boot (Fase 2)
+├── uploads/              # Diretório raiz para armazenamento de PDFs (Compartilhado)
+├── auth.db               # Banco de dados central de Autenticação (Compartilhado)
+└── nfse.db               # Banco de dados de Notas Fiscais (Compartilhado)
 ```
 
 ## 5. Arquitetura do Backend
 
+A plataforma foi desenhada para ser executada perfeitamente com qualquer um dos Backends (Python ou Java).
+
+### 5.1. Arquitetura Java (Fase 2 - Atual)
+
+A implementação em Java substitui dependências nativas de OCR por bibliotecas Java (`Apache PDFBox`), facilitando o deploy e evitando quebras de ambiente no Windows/Linux. Além disso, introduz o robusto `Spring Security` para a barreira do JWT.
+
 ```mermaid
 flowchart TD
-    UI[Frontend Next.js] --> |REST API| API{API Gateway / Controller}
-    API --> |CRUD & Auth| AuthDB[(Banco: Auth)]
+    UI[Frontend Next.js] --> |REST API / POST| Dispatcher{Spring DispatcherServlet}
+    Dispatcher --> |Filtro JWT| Security[Spring Security Filter Chain]
+    Security --> Controller[Controllers / API]
+    
+    Controller --> |Dual DataSource / Hibernate| DB
+    
+    subgraph Bancos de Dados
+        DB_Auth[(Auth DB)]
+        DB_App[(App DB / Invoices)]
+    end
+    DB --> DB_Auth
+    DB --> DB_App
+    
+    Controller --> |Upload PDF NFS-e/NF-e| PDFService[PdfExtractionService]
+    PDFService --> |Apache PDFBox| NativeText(Extração de Texto Digital Nativo)
+    NativeText --> Parser[Heurísticas / RegEx Inteligente]
+    Parser --> |JSON Extraído| DB_App
+```
+
+### 5.2. Arquitetura Python (Fase 1)
+
+```mermaid
+flowchart TD
+    UI[Frontend Next.js] --> |REST API| API{FastAPI Gateway}
+    API --> |CRUD & Auth / SQLAlchemy| AuthDB[(Banco: Auth)]
     API --> |Isolamento Tenant| AppDB[(Banco: App Invoices)]
     
     API --> |Upload PDF NFS-e/NF-e| OCREngine[Serviço de OCR]
     OCREngine --> |PyMuPDF| NativeText(Extração de Texto Digital Nativo)
-    NativeText -.-> |Fallback se escaneado| Tesseract(Tesseract OCR Engine)
+    NativeText -.-> |Fallback| Tesseract(Tesseract OCR Engine)
     NativeText --> Parser[Heurísticas / RegEx Inteligente]
     Tesseract --> Parser
     Parser --> |JSON Extraído| AppDB
-    
-    ERP[Sistemas Parceiros] --> |GET /api/v1/integration/invoices| API
 ```
 
-## 6. Execução
+## 6. Execução e Variáveis de Ambiente
 
-### Pré-requisitos
-* **Node.js (>= 20)**
-* **Python (>= 3.12)** ou **Java (>= 21)**
-* **Tesseract OCR** instalado no Sistema Operacional e no PATH (apenas para fallback).
-* (Opcional) **PostgreSQL** (configurado para nuvem via `.env`) ou **SQLite** nativo.
+O projeto agora suporta troca de banco de dados (Ex: SQLite para PostgreSQL) e porta da API através do uso de variáveis de ambiente (`.env`).
+
+### Variáveis de Ambiente Necessárias
+1. **Frontend (`frontend/.env.local`):**
+   - `NEXT_PUBLIC_API_URL`: Rota da API (ex: `http://localhost:8080/api/v1` para Java ou `http://localhost:8000/api/v1` para Python).
+2. **Java (`backend-java/.env`):**
+   - `DB_AUTH_URL` e `DB_APP_URL`
+   - `JWT_SECRET` e `UPLOAD_DIR`
+3. **Python (`backend-python/.env`):**
+   - `AUTH_DATABASE_URL` e `APP_DATABASE_URL`
+   - `SECRET_KEY`
 
 ### Passo a Passo
 
 1. **Frontend (Next.js):**
     ```bash
     cd frontend
-    npm install
     npm run dev
     ```
-2. **Backend (Python):** 
+2. **Backend (Java):** 
+    ```bash
+    cd backend-java
+    ./mvnw spring-boot:run
+    ```
+3. **Backend (Python - Alternativa):** 
     ```bash
     cd backend-python
-    python -m venv venv
-    venv\Scripts\activate # Windows
-    pip install -r requirements.txt
-    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    venv\Scripts\activate
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
     ```
 
-## 7. Funcionalidades Administrativas
-- **Painel Multitenant:** Dashboard completo com modo escuro, resumo financeiro, geração de relatório PDF da tabela e botão de visualizar PDF.
-- **Microserviço de Autenticação:** Separação física e lógica de usuários/tenants (AuthDB) dos dados da aplicação (AppDB).
-- **Upload Híbrido:** Extração veloz de metadados como Data de Emissão, Descrição do Serviço, CNPJ e Valor Total, adaptável tanto a boletos escaneados quanto a PDFs digitais puros (DANFE).
-- **Integração M2M:** API Key gerada para sistemas ERP de terceiros consumirem notas fiscais sem interação humana.
+## 7. Motivação e Escolhas Arquiteturais (Trade-offs)
 
-## 8. Motivação e Escolhas Arquiteturais (Trade-offs)
+* **Diretórios Centralizados:** O banco de dados e os uploads foram movidos para a raiz do projeto. Isso permite que tanto o Backend em Python quanto o Backend em Java leiam/escrevam exatamente no mesmo disco sem conflitos de caminho (Pathing), simulando a realidade de um Volume Compartilhado no Docker ou um S3 Bucket em Cloud.
+* **Apache PDFBox no Java:** Em vez de fazer uma chamada externa (JNI) pesada para o Tesseract no Java, optou-se pela extração em memória. Como a maioria das NFS-e são geradas digitalmente, o ganho de velocidade  supera a complexidade do OCR.
+* **FastAPI vs Spring Boot:** O projeto demonstra a flexibilidade de microsserviços. A camada de segurança, JWT e Banco de Dados estão rigorosamente mapeadas em ambos, permitindo que a empresa escolha a linguagem ideal para escalar.
 
-* **Abordagem Híbrida no OCR vs Nuvem Comercial:** Em vez de depender do AWS Textract, implementamos `PyMuPDF` para leitura instantânea de PDFs gerados digitalmente (90% dos casos reais). O OCR `Tesseract` atua apenas como *fallback* de processamento para documentos escaneados, reduzindo custos e latência computacional.
-* **Bancos de Dados Separados (Microservices):** Optou-se por separar a base de autenticação (`auth.db`) da base de arquivos (`nfse.db`). Essa escolha arquitetural facilita integrações futuras, como escalar a base de notas horizontalmente mantendo um serviço único e leve para centralização de contas, APIs e Tenants.
-* **FastAPI Inicial vs Spring Boot:** A escolha de começar o projeto com **FastAPI (Python)** deve-se à sinergia da linguagem com bibliotecas de visão computacional. O porte posterior para **Spring Boot** demonstra o domínio sobre a transição de um ecossistema de Inteligência Artificial para um ecossistema maduro corporativo.
+## 8. Próximos Passos (Backlog)
 
-## 9. Desafios Enfrentados e Soluções
-
-* **Extração de Dados em Layouts Variados de NFS-e e NF-e:**
-  * *Desafio:* Cada prefeitura do Brasil e formato (Produto vs Serviço) apresenta um layout diferente. Ferramentas legadas como `pdf2image` falhavam frequentemente no Windows devido à dependência do Poppler.
-  * *Solução:* Substituição pelo `PyMuPDF`, extração via blocos e utilização de "Regex Matching" agressivo focado em termos chaves e padrões matemáticos universais (ex: identificação do maior valor financeiro na página para a tag "Total_Value").
-* **SaaS Multitenancy Seguro e Robusto:**
-  * *Desafio:* O isolamento dos dados de diferentes empresas e vazamentos acidentais.
-  * *Solução:* Adoção de arquitetura Multi-Database. Injeção de dependência rigorosa do SQLAlchemy com duas Engines separadas. O Tenant_id via JWT cruza os bancos apenas sob demanda e proteção.
-
-## 10. Próximos Passos (TODO)
-
-* **[Fase 2] Implementação em Java Spring Boot:** Iniciar a conversão da API e do ecossistema de negócio em Python para Java 21, mantendo a interoperabilidade com o Frontend em Next.js.
 * **[Fase 3] Fluxo de Contratos e Ordens de Serviço (OS):** Implementar funcionalidade de relacionamento entre Contratos, OS e Notas Fiscais, refletindo o fluxo real contábil.
-* **[Fase 4] Emissor (Faturador) de NFS-e Padrão Nacional:** Evoluir a plataforma de uma ferramenta de leitura (Inbound) para um emissor fiscal (Outbound). Integração com as APIs da Receita Federal para geração de DPS, assinatura com Certificado Digital A1 e emissão da NFS-e Nacional, centralizando a operação financeira das empresas.
-* **Integração HTR / Vision LLM para Manuscritos:** Estudar a implementação de chamadas a modelos fundacionais (ex: OpenAI Vision, Gemini 1.5 Pro) para leitura de Ordens de Serviço preenchidas à mão com caneta, onde o OCR clássico baseado em regras apresenta severas limitações.
+* **[Fase 4] Emissor (Faturador) de NFS-e Padrão Nacional:** Evoluir a plataforma de uma ferramenta de leitura (Inbound) para um emissor fiscal (Outbound). Integração com as APIs da Receita Federal.
+* **[Fase 5] Emissor de NF-e (Produto):** Implementação da emissão de notas de produto, utilizando assinaturas A1 e webservices das SEFAZ estaduais.
