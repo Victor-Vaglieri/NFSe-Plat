@@ -13,7 +13,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import com.nfse.saas.services.PdfExtractionService;
 import java.io.File;
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
@@ -47,7 +47,8 @@ public class InvoiceController {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long tenantId = userDetails.getTenantId();
 
-        if (file.isEmpty() || !file.getOriginalFilename().endsWith(".pdf")) {
+        String originalFilename = file.getOriginalFilename();
+        if (file.isEmpty() || originalFilename == null || !originalFilename.endsWith(".pdf")) {
             return ResponseEntity.badRequest().body(Map.of("detail", "Somente arquivos PDF so aceitos."));
         }
 
@@ -55,7 +56,7 @@ public class InvoiceController {
             File uploadDir = new File(uploadDirConfig).getAbsoluteFile();
             if (!uploadDir.exists()) uploadDir.mkdirs();
 
-            String uniqueFilename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
             File targetFile = new File(uploadDir, uniqueFilename);
             file.transferTo(targetFile);
 
@@ -70,7 +71,7 @@ public class InvoiceController {
             invoice.setTotalValue((Double) extractedData.get("total_value"));
             invoice.setDescription((String) extractedData.get("description"));
             invoice.setStatus("PROCESSADO");
-            invoice.setFilePath(targetFile.getAbsolutePath());
+            invoice.setFilePath("uploads/" + uniqueFilename);
             invoice.setRawExtractedText(rawText);
 
             String issueDateStr = (String) extractedData.get("issue_date");

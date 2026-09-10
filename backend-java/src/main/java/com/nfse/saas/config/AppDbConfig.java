@@ -51,6 +51,6 @@ public class AppDbConfig {
     @Bean(name = "appTransactionManager")
     public PlatformTransactionManager appTransactionManager(
             @Qualifier("appEntityManagerFactory") EntityManagerFactory appEntityManagerFactory) {
-        return new JpaTransactionManager(appEntityManagerFactory);
+        return new JpaTransactionManager(java.util.Objects.requireNonNull(appEntityManagerFactory));
     }
 }

@@ -55,6 +55,6 @@ public class AuthDbConfig {
     @Bean(name = "authTransactionManager")
     public PlatformTransactionManager authTransactionManager(
             @Qualifier("authEntityManagerFactory") EntityManagerFactory authEntityManagerFactory) {
-        return new JpaTransactionManager(authEntityManagerFactory);
+        return new JpaTransactionManager(java.util.Objects.requireNonNull(authEntityManagerFactory));
     }
 }
