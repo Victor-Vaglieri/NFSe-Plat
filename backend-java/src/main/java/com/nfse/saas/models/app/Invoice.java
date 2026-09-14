@@ -45,7 +45,11 @@ public class Invoice {
     @Column(name = "raw_extracted_text", columnDefinition = "TEXT")
     private String rawExtractedText;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_order_id")
+    private ServiceOrder serviceOrder;
+
+    @Column(name = "created_at", insertable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
     // Getters and Setters omitted for brevity...
@@ -75,6 +79,8 @@ public class Invoice {
     public void setFilePath(String filePath) { this.filePath = filePath; }
     public String getRawExtractedText() { return rawExtractedText; }
     public void setRawExtractedText(String rawExtractedText) { this.rawExtractedText = rawExtractedText; }
+    public ServiceOrder getServiceOrder() { return serviceOrder; }
+    public void setServiceOrder(ServiceOrder serviceOrder) { this.serviceOrder = serviceOrder; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 
+import com.nfse.saas.models.app.ServiceOrder;
+import com.nfse.saas.repositories.app.ServiceOrderRepository;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/invoices")
@@ -26,6 +29,9 @@ public class InvoiceController {
 
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private ServiceOrderRepository serviceOrderRepository;
 
     @Autowired
     private PdfExtractionService pdfService;
@@ -43,7 +49,9 @@ public class InvoiceController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadInvoice(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadInvoice(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "service_order_id", required = false) Long serviceOrderId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long tenantId = userDetails.getTenantId();
 
@@ -73,6 +81,14 @@ public class InvoiceController {
             invoice.setStatus("PROCESSADO");
             invoice.setFilePath("uploads/" + uniqueFilename);
             invoice.setRawExtractedText(rawText);
+
+            if (serviceOrderId != null) {
+                serviceOrderRepository.findById(serviceOrderId).ifPresent(os -> {
+                    if (os.getTenantId().equals(tenantId)) {
+                        invoice.setServiceOrder(os);
+                    }
+                });
+            }
 
             String issueDateStr = (String) extractedData.get("issue_date");
             if (issueDateStr != null) {
