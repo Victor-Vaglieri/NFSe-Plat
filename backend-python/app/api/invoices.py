@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks, Form
 from sqlalchemy.orm import Session
+from typing import Optional
 import os
 import shutil
 from datetime import datetime
@@ -22,6 +23,7 @@ if not os.path.exists(UPLOAD_DIR):
 @router.post("/upload")
 async def upload_invoice(
     file: UploadFile = File(...),
+    service_order_id: Optional[int] = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db_app)
 ):
@@ -48,6 +50,7 @@ async def upload_invoice(
             tenant_id=current_user.tenant_id,
             status="ERRO",
             file_path=file_path,
+            service_order_id=service_order_id,
             raw_extracted_text=str(e)
         )
         db.add(failed_invoice)
@@ -73,6 +76,7 @@ async def upload_invoice(
         issue_date=issue_date_obj,
         status="PROCESSADO",
         file_path=file_path,
+        service_order_id=service_order_id,
         raw_extracted_text=extracted_data.get("raw_text")
     )
     

@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.api import auth, invoices, integration
+from app.api import auth, invoices, integration, contracts, service_orders
 import os
 
 # Create uploads directory if it doesn't exist to prevent crash
@@ -41,6 +41,8 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(invoices.router, prefix=f"{settings.API_V1_STR}/invoices", tags=["invoices"])
 app.include_router(integration.router, prefix=f"{settings.API_V1_STR}/integration", tags=["erp-integration"])
+app.include_router(contracts.router, prefix=f"{settings.API_V1_STR}/contracts", tags=["contracts"])
+app.include_router(service_orders.router, prefix=f"{settings.API_V1_STR}/service-orders", tags=["service_orders"])
 
 @app.get("/")
 def read_root():
