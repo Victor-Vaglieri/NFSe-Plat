@@ -16,6 +16,8 @@ O **NFSe SaaS Platform** atua como um sistema centralizador e gerenciador de not
 
 1. **Fase 1 (Python First) - CONCLUÍDA:** Validação da arquitetura multitenant e da extração OCR complexa utilizando o ecossistema Python (FastAPI + Pytesseract).
 2. **Fase 2 (Portabilidade Java) - CONCLUÍDA:** Reconstrução exata do contrato de API utilizando Java 21 e Spring Boot, comprovando proficiência técnica em múltiplas linguagens corporativas e extração nativa via Apache PDFBox.
+3. **Fase 3 (Fluxo Contábil Relacional) - CONCLUÍDA:** Expansão do banco de dados (Python e Java) para gerenciar o ciclo de vida completo: `Contratos` -> `Ordens de Serviço` -> `Notas Fiscais`.
+4. **Fase 4 (Módulo Emissor e Criptografia A1) - CONCLUÍDA:** Construção do motor de faturamento. Transformação o sistema em um emissor tambem. Implementação de assinaturas digitais RSA-SHA256 (atualmente mock) simulando o certificado e-CNPJ (A1) e geração de DANFE PDF via Canvas (ReportLab).
 
 ## 3. Tecnologias e Ferramentas (Stack)
 
@@ -121,9 +123,9 @@ O projeto agora suporta troca de banco de dados (Ex: SQLite para PostgreSQL) e p
 * **Interoperabilidade de Contratos (Jackson SNAKE_CASE):** Para garantir que o Frontend (Next.js) consuma a API Java da mesma forma que consumia a API Python (FastAPI), foi injetada a configuração `spring.jackson.property-naming-strategy: SNAKE_CASE` no Spring Boot. Isso converte nativamente todos os DTOs e Modelos CamelCase do Java (`invoiceNumber`) para SnakeCase (`invoice_number`), impedindo quebras de tipagem no Front-end sem poluir as Entidades Java com anotações `@JsonProperty`.
 * **Servidor de Arquivos Estáticos Seguros (NIO Paths):** A resolução de pastas físicas via Spring Boot no Windows é suscetível a erros de caminho (404). Foi implementado a injeção do pacote `java.nio.file.Paths` dentro da classe `WebConfig`, forçando o encapsulamento Universal de URI (`file:///...`). Isso torna a visualização e armazenamento de PDFs do sistema compatível em qualquer Sistema Operacional (Windows, Mac ou Linux Server).
 * **FastAPI vs Spring Boot:** O projeto demonstra a flexibilidade de microsserviços. A camada de segurança, JWT e Banco de Dados estão rigorosamente mapeadas em ambos, permitindo que a empresa escolha a linguagem ideal para escalar.
+* **PKI Mockada (Assinatura RSA):** Para demonstrar proficiência em segurança da informação sem depender de certificados A1 reais (pagos) ou da instabilidade do ambiente de homologação da Receita Federal, foi criado um script Python embutido (`generate_mock_cert.py`) utilizando a biblioteca `cryptography`. Ele emite um par de chaves `.pem` de 2048-bits. O backend então gera o XML da NFS-e e assina digitalmente (XML Signature) usando a biblioteca `signxml`, garantindo a integridade criptográfica idêntica a de um e-CNPJ real.
 
 ## 8. Próximos Passos (Backlog)
 
-* **[Fase 3] Fluxo de Contratos e Ordens de Serviço (OS):** Implementar funcionalidade de relacionamento entre Contratos, OS e Notas Fiscais, refletindo o fluxo real contábil.
-* **[Fase 4] Emissor (Faturador) de NFS-e Padrão Nacional:** Evoluir a plataforma de uma ferramenta de leitura (Inbound) para um emissor fiscal (Outbound). Integração com as APIs da Receita Federal.
 * **[Fase 5] Emissor de NF-e (Produto):** Implementação da emissão de notas de produto, utilizando assinaturas A1 e webservices das SEFAZ estaduais.
+* **[Fase 6] Exportação SPED Fiscal:** Geração de relatórios e exportação magnética dos registros fiscais das notas armazenadas no período (Inbound/Outbound).
