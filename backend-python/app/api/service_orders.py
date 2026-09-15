@@ -6,12 +6,12 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.database import get_app_db
+from app.database import get_db_app
 from app.models.service_order import ServiceOrder
 from app.models.contract import Contract
-from app.api.auth import get_current_user
-from app.models.tenant import User
-from app.core.config import UPLOAD_DIR
+from app.api.deps import get_current_user
+from app.models.user import User
+from app.core.config import settings
 
 router = APIRouter()
 
@@ -28,7 +28,7 @@ class ServiceOrderOut(BaseModel):
         orm_mode = True
 
 @router.get("/", response_model=List[ServiceOrderOut])
-def get_service_orders(db: Session = Depends(get_app_db), current_user: User = Depends(get_current_user)):
+def get_service_orders(db: Session = Depends(get_db_app), current_user: User = Depends(get_current_user)):
     return db.query(ServiceOrder).filter(ServiceOrder.tenant_id == current_user.tenant_id).all()
 
 @router.post("/", response_model=ServiceOrderOut)
@@ -37,7 +37,7 @@ def create_service_order(
     description: str = Form(...),
     value: float = Form(...),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_app_db),
+    db: Session = Depends(get_db_app),
     current_user: User = Depends(get_current_user)
 ):
     contract = db.query(Contract).filter(Contract.id == contract_id, Contract.tenant_id == current_user.tenant_id).first()
@@ -46,9 +46,9 @@ def create_service_order(
 
     file_path_str = None
     if file:
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
         unique_filename = f"{uuid.uuid4()}_{file.filename}"
-        target_path = os.path.join(UPLOAD_DIR, unique_filename)
+        target_path = os.path.join(settings.UPLOAD_DIR, unique_filename)
         with open(target_path, "wb") as f:
             f.write(file.file.read())
         file_path_str = f"uploads/{unique_filename}"

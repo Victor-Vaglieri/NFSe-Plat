@@ -33,10 +33,6 @@ def get_invoices_for_erp(
     tenant_id: int = Depends(get_tenant_by_api_key),
     db_app: Session = Depends(get_db_app)
 ):
-    """
-    Endpoint for ERP systems to fetch invoices via API Key (M2M).
-    Crosses databases: validates auth via AuthDB, fetches data from AppDB.
-    """
     invoices = db_app.query(Invoice).filter(Invoice.tenant_id == tenant_id, Invoice.status == "PROCESSADO").order_by(Invoice.created_at.desc()).all()
     
     return [

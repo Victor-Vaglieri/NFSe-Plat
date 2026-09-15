@@ -4,10 +4,10 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.database import get_app_db
+from app.database import get_db_app
 from app.models.contract import Contract
-from app.api.auth import get_current_user
-from app.models.tenant import User
+from app.api.deps import get_current_user
+from app.models.user import User
 
 router = APIRouter()
 
@@ -31,11 +31,11 @@ class ContractOut(BaseModel):
         orm_mode = True
 
 @router.get("/", response_model=List[ContractOut])
-def get_contracts(db: Session = Depends(get_app_db), current_user: User = Depends(get_current_user)):
+def get_contracts(db: Session = Depends(get_db_app), current_user: User = Depends(get_current_user)):
     return db.query(Contract).filter(Contract.tenant_id == current_user.tenant_id).all()
 
 @router.post("/", response_model=ContractOut)
-def create_contract(contract_in: ContractCreate, db: Session = Depends(get_app_db), current_user: User = Depends(get_current_user)):
+def create_contract(contract_in: ContractCreate, db: Session = Depends(get_db_app), current_user: User = Depends(get_current_user)):
     contract = Contract(
         tenant_id=current_user.tenant_id,
         client_name=contract_in.client_name,

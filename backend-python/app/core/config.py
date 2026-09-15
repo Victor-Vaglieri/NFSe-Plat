@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+# TODO acertar isso depois
 class Settings(BaseSettings):
     PROJECT_NAME: str = "NFSe SaaS Platform"
     API_V1_STR: str = "/api/v1"
@@ -15,6 +16,9 @@ class Settings(BaseSettings):
 
     # 3. Uploads directory
     UPLOAD_DIR: str = "../uploads"
+
+    # API Port
+    PORT: int = 8000
 
     class Config:
         case_sensitive = True

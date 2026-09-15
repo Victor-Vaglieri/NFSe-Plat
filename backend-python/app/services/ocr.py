@@ -4,12 +4,9 @@ from PIL import Image
 import io
 import re
 
+# TODO trabalhar mais na extração de dados do PDF, pois cada prefeitura tem um layout diferente. Talvez seja necessário criar regras específicas para cada prefeitura ou usar técnicas de NLP para extrair os dados de forma mais robusta.
+
 def extract_text_from_pdf(pdf_path: str) -> str:
-    """
-    Extracts text from a PDF. 
-    First tries direct digital text extraction (fast and accurate).
-    If empty (scanned image), falls back to Tesseract OCR without needing Poppler.
-    """
     try:
         # Open PDF
         doc = fitz.open(pdf_path)
@@ -38,10 +35,6 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 import re
 
 def parse_nfs_e_data(raw_text: str) -> dict:
-    """
-    Extracts CNPJ, Total Value, and Invoice Number from the raw OCR text using Regular Expressions.
-    Now supports both NFS-e and NF-e (DANFE).
-    """
     data = {
         "invoice_number": None,
         "issuer_cnpj": None,
