@@ -295,8 +295,8 @@ export default function DashboardPage() {
                           </td>
                           <td className="p-4 text-sm font-bold text-right whitespace-nowrap">R$ {inv.total_value?.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                           <td className="p-4 text-center">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${inv.status === 'PROCESSADO' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'}`}>
-                              {inv.status}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${["PROCESSADO", "PROCESSED", "EMITIDA"].includes(inv.status) ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'}`}>
+                              {inv.status === "PROCESSED" ? "PROCESSADO" : inv.status === "ERROR" ? "ERRO" : inv.status}
                             </span>
                           </td>
                           <td className="p-4 text-center print:hidden">

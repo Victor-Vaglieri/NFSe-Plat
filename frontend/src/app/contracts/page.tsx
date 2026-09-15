@@ -146,7 +146,7 @@ export default function ContractsPage() {
                         {c.total_value ? `R$ ${c.total_value.toLocaleString('pt-BR', {minimumFractionDigits:2})}` : '-'}
                       </td>
                       <td className="p-4 text-center">
-                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-bold">{c.status}</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">{c.status === "ACTIVE" ? "ATIVO" : c.status === "INACTIVE" ? "INATIVO" : c.status}</span>
                       </td>
                     </tr>
                   ))}

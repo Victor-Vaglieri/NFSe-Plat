@@ -58,6 +58,26 @@ export default function ServiceOrdersPage() {
     }
   };
 
+  const handleFaturar = async (id: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/billing/issue/${id}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert("NFSe emitida com sucesso!");
+        fetchData(token!);
+      } else {
+        const error = await res.json();
+        alert(error.detail || "Erro ao faturar a OS.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Erro de comunicação com o servidor.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -133,28 +153,39 @@ export default function ServiceOrdersPage() {
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase">Descrição</th>
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase">Data</th>
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase text-right">Valor</th>
-                    <th className="p-4 text-xs font-bold text-gray-500 uppercase text-center">Status</th>
-                    <th className="p-4 text-xs font-bold text-gray-500 uppercase text-center">Anexo</th>
+                    <th className="p-4 text-xs font-bold text-neutral-500 uppercase text-center">Status</th>
+                    <th className="p-4 text-xs font-bold text-neutral-500 uppercase text-center">Anexo</th>
+                    <th className="p-4 text-xs font-bold text-neutral-500 uppercase text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {osList.length === 0 ? (
-                    <tr><td colSpan={7} className="p-8 text-center text-gray-500">Nenhuma OS encontrada.</td></tr>
+                    <tr><td colSpan={8} className="p-8 text-center text-neutral-500">Nenhuma OS encontrada.</td></tr>
                   ) : osList.map(os => (
-                    <tr key={os.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <tr key={os.id} className="border-b dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
                       <td className="p-4 font-mono text-sm font-bold text-blue-600">{os.id}</td>
                       <td className="p-4 font-mono text-sm">{os.contract_id}</td>
                       <td className="p-4 text-sm max-w-[200px] truncate">{os.description}</td>
                       <td className="p-4 text-sm">{new Date(os.execution_date).toLocaleDateString('pt-BR')}</td>
                       <td className="p-4 text-right font-bold">R$ {os.value.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
                       <td className="p-4 text-center">
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-bold">{os.status}</span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${os.status === "BILLED" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800"}`}>{os.status === "BILLED" ? "FATURADO" : os.status === "PENDING" ? "PENDENTE" : os.status}</span>
                       </td>
                       <td className="p-4 text-center">
                         {os.file_path && (
                           <a href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/${os.file_path.replace('\\', '/')}`} target="_blank" className="text-blue-500 hover:underline text-sm font-bold">
                             Ver
                           </a>
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {os.status !== 'BILLED' && (
+                          <button 
+                            onClick={() => handleFaturar(os.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1 px-3 rounded shadow transition-all"
+                          >
+                            Faturar
+                          </button>
                         )}
                       </td>
                     </tr>
