@@ -13,6 +13,9 @@ export default function DashboardPage() {
   const [osList, setOsList] = useState<any[]>([]);
   const [selectedOsId, setSelectedOsId] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+  const [reportMonth, setReportMonth] = useState("2026-09");
+  const [reportStatus, setReportStatus] = useState("IDLE");
+  const [reportUrl, setReportUrl] = useState("");
 
   useEffect(() => {
     const isDark = localStorage.getItem("theme") === "dark";
@@ -49,6 +52,54 @@ export default function DashboardPage() {
       if (res.ok) setOsList(await res.json());
     } catch (e) { console.error(e); }
   };
+
+  const handleGenerateReport = async () => {
+    const token = localStorage.getItem("token");
+    setReportStatus("PENDING");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ reference_month: reportMonth })
+      });
+      const data = await res.json();
+      if (data.status === "COMPLETED" && data.file_path) {
+        setReportStatus("COMPLETED");
+        setReportUrl(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/${data.file_path}`);
+      }
+    } catch (e) {
+      setReportStatus("IDLE");
+      console.error(e);
+    }
+  };
+
+  const checkReportStatus = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const currentReport = data.find((r: any) => r.reference_month === reportMonth);
+      if (currentReport && currentReport.status === "COMPLETED" && currentReport.file_path) {
+        setReportStatus("COMPLETED");
+        setReportUrl(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}/${currentReport.file_path}`);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => {
+    let interval: any;
+    if (reportStatus === "PENDING") {
+      interval = setInterval(() => {
+        checkReportStatus();
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [reportStatus, reportMonth]);
 
   const fetchInvoices = async (token: string) => {
     try {
@@ -177,17 +228,31 @@ export default function DashboardPage() {
               <h3 className="text-5xl font-extrabold text-green-600 dark:text-green-400 tracking-tight">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
             </div>
             
-            {/* Card: Botão de PDF */}
-            <button 
-              onClick={() => window.print()} 
-              className="group relative overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all flex flex-col items-center justify-center gap-3 print:hidden border border-indigo-400 dark:border-indigo-500 w-full h-full"
-            >
-              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-10 h-10 group-hover:-translate-y-1 transition-transform">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              <span className="text-xl font-bold tracking-wide">Gerar Relatório (PDF)</span>
-            </button>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center gap-3">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Fechamento Mensal</p>
+                <input type="month" value={reportMonth} onChange={e => {setReportMonth(e.target.value); setReportStatus("IDLE"); setReportUrl("");}} className="p-1 rounded bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm outline-none font-medium"/>
+              </div>
+              
+              {reportStatus === "PENDING" ? (
+                <button disabled className="bg-indigo-400 dark:bg-indigo-500/50 text-white p-3 rounded-xl flex items-center justify-center gap-2 cursor-wait w-full font-bold">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Preparando Arquivos...
+                </button>
+              ) : reportStatus === "COMPLETED" && reportUrl ? (
+                <a href={reportUrl} target="_blank" className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition-colors w-full font-bold shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                  Baixar Relatório Fechado
+                </a>
+              ) : (
+                <button onClick={handleGenerateReport} className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition-colors w-full font-bold shadow-sm">
+                  Gerar Relatório Consolidado
+                </button>
+              )}
+            </div>
             
           </div>
 
@@ -283,8 +348,8 @@ export default function DashboardPage() {
                           <td className="p-4 text-sm font-medium">{inv.invoice_number || "-"}</td>
                           <td className="p-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-gray-700 dark:text-gray-300">Lançamento: {new Date(inv.created_at).toLocaleDateString("pt-BR")}</span>
-                              <span className="text-xs">Emissão: {inv.issue_date ? new Date(inv.issue_date).toLocaleDateString("pt-BR") : "-"}</span>
+                              <span className="font-semibold text-gray-700 dark:text-gray-300">Lançamento: {inv.created_at.substring(8,10) + "/" + inv.created_at.substring(5,7) + "/" + inv.created_at.substring(0,4)}</span>
+                              <span className="text-xs">Emissão: {inv.issue_date ? inv.issue_date.substring(8,10) + "/" + inv.issue_date.substring(5,7) + "/" + inv.issue_date.substring(0,4) : "-"}</span>
                             </div>
                           </td>
                           <td className="p-4 text-sm font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">{inv.issuer_cnpj || "-"}</td>
