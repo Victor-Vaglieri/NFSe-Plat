@@ -126,6 +126,7 @@ def issue_invoice(service_order_id: int, background_tasks: BackgroundTasks, db: 
     
     # 4. Atualizar o Status da OS e Criar o Registro da Nota
     from app.models.invoice import Invoice
+    from datetime import datetime
     new_invoice = Invoice(
         tenant_id=current_user.tenant_id,
         service_order_id=os_model.id,
@@ -135,6 +136,7 @@ def issue_invoice(service_order_id: int, background_tasks: BackgroundTasks, db: 
         recipient_cnpj=contract.client_cnpj,
         description=os_model.description,
         total_value=os_model.value,
+        issue_date=datetime.utcnow(),
         status="EMITIDA",
         file_path=f"uploads/{pdf_filename}",
         raw_extracted_text=signed_xml # Salvando o XML assinado aqui como payload
