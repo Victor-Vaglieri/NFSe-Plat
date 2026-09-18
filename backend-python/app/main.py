@@ -11,8 +11,9 @@ import app.models.api_key
 import app.models.contract
 import app.models.service_order
 import app.models.invoice
+import app.models.report
 
-from app.api import auth, invoices
+from app.api import auth, invoices, integration, contracts, service_orders, billing, reports
 
 # Create tables in DBs (for dev purposes)
 BaseAuth.metadata.create_all(bind=engine_auth)
@@ -36,11 +37,12 @@ app.add_middleware(
 from app.api import auth, invoices, integration, contracts, service_orders, billing
 import os
 
-if not os.path.exists("uploads"):
-    os.makedirs("uploads")
+# Create uploads directory if it doesn't exist to prevent crash
+if not os.path.exists(settings.UPLOAD_DIR):
+    os.makedirs(settings.UPLOAD_DIR)
 
 # Mount static files so frontend can fetch PDFs via URL
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(invoices.router, prefix=f"{settings.API_V1_STR}/invoices", tags=["invoices"])
@@ -48,6 +50,7 @@ app.include_router(integration.router, prefix=f"{settings.API_V1_STR}/integratio
 app.include_router(contracts.router, prefix=f"{settings.API_V1_STR}/contracts", tags=["contracts"])
 app.include_router(service_orders.router, prefix=f"{settings.API_V1_STR}/service-orders", tags=["service_orders"])
 app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/billing", tags=["billing"])
+app.include_router(reports.router, prefix=f"{settings.API_V1_STR}/reports", tags=["reports"])
 
 @app.get("/")
 def read_root():
