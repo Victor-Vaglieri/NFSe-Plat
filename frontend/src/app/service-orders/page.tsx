@@ -166,7 +166,7 @@ export default function ServiceOrdersPage() {
                       <td className="p-4 font-mono text-sm font-bold text-blue-600">{os.id}</td>
                       <td className="p-4 font-mono text-sm">{os.contract_id}</td>
                       <td className="p-4 text-sm max-w-[200px] truncate">{os.description}</td>
-                      <td className="p-4 text-sm">{new Date(os.execution_date).toLocaleDateString('pt-BR')}</td>
+                      <td className="p-4 text-sm">{os.execution_date.substring(8,10) + "/" + os.execution_date.substring(5,7) + "/" + os.execution_date.substring(0,4)}</td>
                       <td className="p-4 text-right font-bold">R$ {os.value.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
                       <td className="p-4 text-center">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${os.status === "BILLED" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800"}`}>{os.status === "BILLED" ? "FATURADO" : os.status === "PENDING" ? "PENDENTE" : os.status}</span>

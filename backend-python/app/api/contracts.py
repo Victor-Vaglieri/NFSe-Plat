@@ -49,3 +49,17 @@ def create_contract(contract_in: ContractCreate, db: Session = Depends(get_db_ap
     db.commit()
     db.refresh(contract)
     return contract
+class ContractStatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/{contract_id}/status", response_model=ContractOut)
+def update_contract_status(contract_id: int, status_update: ContractStatusUpdate, db: Session = Depends(get_db_app), current_user: User = Depends(get_current_user)):
+    contract = db.query(Contract).filter(Contract.id == contract_id, Contract.tenant_id == current_user.tenant_id).first()
+    if not contract:
+        raise HTTPException(status_code=404, detail="Contract not found")
+    contract.status = status_update.status
+    db.commit()
+    db.refresh(contract)
+    return contract
+
+

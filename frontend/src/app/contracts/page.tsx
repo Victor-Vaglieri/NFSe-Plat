@@ -46,10 +46,29 @@ export default function ContractsPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
-      if (res.ok) {
-        setContracts(await res.json());
-      } else if (res.status === 401 || res.status === 403) {
+      if (res.ok) setContracts(await res.json());
+      else if (res.status === 401 || res.status === 403) {
         handleLogout();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const toggleContractStatus = async (contractId: number, currentStatus: string) => {
+    const token = localStorage.getItem("token");
+    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contracts/${contractId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        fetchContracts(token!);
       }
     } catch (e) {
       console.error(e);
@@ -129,24 +148,30 @@ export default function ContractsPage() {
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase">Cliente</th>
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase">CNPJ</th>
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase">Data Início</th>
-                    <th className="p-4 text-xs font-bold text-gray-500 uppercase text-right">Valor Estimado</th>
+                    <th className="p-4 text-xs font-bold text-gray-500 uppercase text-right">Valor Total</th>
                     <th className="p-4 text-xs font-bold text-gray-500 uppercase text-center">Status</th>
+                    <th className="p-4 text-xs font-bold text-gray-500 uppercase text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {contracts.length === 0 ? (
-                    <tr><td colSpan={6} className="p-8 text-center text-gray-500">Nenhum contrato cadastrado.</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-gray-500">Nenhum contrato cadastrado.</td></tr>
                   ) : contracts.map(c => (
                     <tr key={c.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="p-4 font-mono text-sm">{c.id}</td>
                       <td className="p-4 font-semibold">{c.client_name}</td>
                       <td className="p-4 font-mono text-sm">{c.client_cnpj}</td>
-                      <td className="p-4 text-sm">{new Date(c.start_date).toLocaleDateString('pt-BR')}</td>
+                      <td className="p-4 text-sm">{c.start_date.substring(8,10) + "/" + c.start_date.substring(5,7) + "/" + c.start_date.substring(0,4)}</td>
                       <td className="p-4 text-right font-bold">
                         {c.total_value ? `R$ ${c.total_value.toLocaleString('pt-BR', {minimumFractionDigits:2})}` : '-'}
                       </td>
                       <td className="p-4 text-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">{c.status === "ACTIVE" ? "ATIVO" : c.status === "INACTIVE" ? "INATIVO" : c.status}</span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${c.status === "ACTIVE" ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"}`}>{c.status === "ACTIVE" ? "ATIVO" : c.status === "INACTIVE" ? "INATIVO" : c.status}</span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button onClick={() => toggleContractStatus(c.id, c.status)} className="text-sm px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 font-medium transition-colors">
+                          {c.status === "ACTIVE" ? "Desativar" : "Ativar"}
+                        </button>
                       </td>
                     </tr>
                   ))}
