@@ -13,6 +13,9 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.core.config import settings
 
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
 # TODO tem muitas coisas aqui que são mockadas e devem ser substituídas por integrações reais com a prefeitura, como a assinatura digital e a emissão do XML da NFS-e. 
 
 
@@ -39,9 +42,6 @@ def sign_xml(xml_string: str) -> str:
         return xml_string # fallback to unsigned for robust demo
 
 def generate_mock_danfe(xml_signed: str, filepath: str, os_model: ServiceOrder, contract: Contract):
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.units import cm
 
     c = canvas.Canvas(filepath, pagesize=A4)
     width, height = A4

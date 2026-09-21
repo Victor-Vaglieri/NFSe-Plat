@@ -10,6 +10,11 @@ from app.models.user import User
 from app.models.report import Report
 from app.services.report_generator import generate_monthly_report_task
 
+from fastapi.responses import PlainTextResponse
+from app.models.invoice import Invoice
+from app.services.sped_generator import SpedGenerator
+
+
 router = APIRouter()
 
 class ReportOut(BaseModel):
@@ -70,3 +75,36 @@ def list_reports(
     return db.query(Report).filter(
         Report.tenant_id == current_user.tenant_id
     ).order_by(Report.created_at.desc()).limit(12).all()
+
+@router.get("/sped/{reference_month}", response_class=PlainTextResponse)
+def generate_sped(
+    reference_month: str,
+    db: Session = Depends(get_db_app),
+    current_user: User = Depends(get_current_user)
+):
+    year_str, month_str = reference_month.split('-')
+    year = int(year_str)
+    month = int(month_str)
+    
+    all_invoices = db.query(Invoice).filter(Invoice.tenant_id == current_user.tenant_id).all()
+    month_invoices = []
+    for inv in all_invoices:
+        date_to_check = inv.issue_date or inv.created_at
+        if type(date_to_check) is str:
+            try:
+                dt = datetime.fromisoformat(date_to_check.replace(' ', 'T'))
+                if dt.year == year and dt.month == month:
+                    month_invoices.append(inv)
+            except:
+                pass
+        elif type(date_to_check) is datetime:
+            if date_to_check.year == year and date_to_check.month == month:
+                month_invoices.append(inv)
+                
+    generator = SpedGenerator(tenant=current_user.tenant_id, reference_month=reference_month, invoices=month_invoices)
+    sped_content = generator.generate()
+    
+    headers = {
+        "Content-Disposition": f"attachment; filename=SPED_{current_user.tenant_id}_{reference_month}.txt"
+    }
+    return PlainTextResponse(content=sped_content, headers=headers)
