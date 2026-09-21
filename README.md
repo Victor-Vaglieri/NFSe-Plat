@@ -1,29 +1,28 @@
-# NFSe SaaS Platform (OCR & Multitenant Edition)
+# VeVOn NFSe SaaS
 
-Este repositório contém o código-fonte de uma plataforma SaaS desenvolvida para a captura automatizada, armazenamento, gestão e integração de documentos fiscais eletrônicos (NF-e, NFS-e e CT-e), com foco central na leitura estruturada de PDFs via OCR.
+**VeVOn NFSe SaaS** é uma plataforma moderna e completa (Full-Stack) voltada para a gestão fiscal, contratos de serviço (Ordens de Serviço) e emissão de notas fiscais de serviço eletrônicas (NFS-e). O sistema inclui desde painéis gerenciais robustos até a exportação de dados para softwares contábeis via arquivos magnéticos SPED.
 
-## 1. Visão Geral
+A plataforma apresenta um Front-end moderno (Dark Mode, Glassmorphism) construído em Next.js e Tailwind, com foco rigoroso em UI/UX e privacidade de dados, além de um backend flexível focado em processamento assíncrono e segurança.
 
-O **NFSe SaaS Platform** atua como um sistema centralizador e gerenciador de notas fiscais emitidas contra CNPJs cadastrados no sistema, operando em um ecossistema multitenant.
+## 1. Visão Geral (O Problema)
 
-### Objetivos do Projeto
-1. **Captura Automatizada:** Integração com prefeituras e SEFAZ para coleta de notas fiscais.
-2. **Leitura OCR / Extração de Texto:** Extração de dados cruciais (CNPJ, Valor, etc.) de PDFs de notas fiscais de serviço (NFS-e) de prefeituras sem webservice aberto.
-3. **Arquitetura Multitenant (SaaS):** Isolamento total de dados entre diferentes empresas/clientes no mesmo banco de dados.
-4. **Integração ERP:** API RESTful robusta para alimentação de sistemas contábeis parceiros.
+Gerenciar o faturamento mensal de serviços dezenas de clientes e gerar a contabilidade final de forma automatizada. 
+* **Para a Empresa:** Controle de Faturamento, Ordens de Serviço (OS) e emissão nativa (mock PKI) das notas (NFS-e).
+* **Para a Contabilidade:** Em vez de receber PDFs soltos ou faturamentos perdidos, a plataforma gera PDFs de fechamento vetoriais e emite o arquivo posicional SPED Fiscal (.txt) para integração perfeita com sistemas como Domínio Sistemas.
 
-## 2. Ciclo de Desenvolvimento (Fases)
+## 2. Roteiro e Fases de Desenvolvimento
 
-1. **Fase 1 (Python First) - CONCLUÍDA:** Validação da arquitetura multitenant e da extração OCR complexa utilizando o ecossistema Python (FastAPI + Pytesseract).
-2. **Fase 2 (Portabilidade Java) - CONCLUÍDA:** Reconstrução exata do contrato de API utilizando Java 21 e Spring Boot, comprovando proficiência técnica em múltiplas linguagens corporativas e extração nativa via Apache PDFBox.
-3. **Fase 3 (Fluxo Contábil Relacional) - CONCLUÍDA:** Expansão do banco de dados (Python e Java) para gerenciar o ciclo de vida completo: `Contratos` -> `Ordens de Serviço` -> `Notas Fiscais`.
-4. **Fase 4 (Módulo Emissor e Criptografia A1) - CONCLUÍDA:** Construção do motor de faturamento. Transformação o sistema em um emissor tambem. Implementação de assinaturas digitais RSA-SHA256 (atualmente mock) simulando o certificado e-CNPJ (A1) e geração de DANFE PDF via Canvas (ReportLab).
-5. **Fase 4.5 (Relatórios Gerenciais e BI) - CONCLUÍDA:** Criação de motor de agregação (Fechamento Mensal) com processamento assíncrono. Geração nativa de dashboards em PDF utilizando `reportlab` (gráficos vetoriais de pizza, tabelas zebra) e fusão (merge) inteligente de múltiplos anexos usando `PyMuPDF`. Arquitetura de cache reativo (24h) implantada na tabela `reports` para prevenção de sobrecarga (DoS) do servidor.
+1. **Fase 1 (Core & Segurança) - CONCLUÍDA:** Autenticação robusta JWT, Isolamento Multi-tenant (cada empresa só enxerga seus dados via `tenant_cnpj`), e motor de Parser de PDF (Upload/Leitura).
+2. **Fase 2 (Migração e Resiliência) - CONCLUÍDA:** Integração da estrutura de Backends agnósticos (Java Spring Boot ou FastAPI Python) compartilhando o mesmo SQLite/File System.
+3. **Fase 3 (Contratos e Ordens de Serviço) - CONCLUÍDA:** O módulo de "Service Orders" e "Contracts", gerando uma arquitetura real de faturamento em lote.
+4. **Fase 4 (Módulo Emissor e Criptografia A1) - CONCLUÍDA:** Construção do motor de faturamento. Implementação de assinaturas digitais RSA-SHA256 (mock) simulando certificado e-CNPJ (A1) e geração de DANFE/PDF via Canvas (ReportLab).
+5. **Fase 4.5 (Relatórios Gerenciais e BI) - CONCLUÍDA:** Criação do motor de agregação (Fechamento Mensal) assíncrono com geração nativa de dashboards em PDF (gráfico de pizza vetorial) usando `reportlab` e fusão de PDF usando `PyMuPDF`. Cache reativo no banco de dados para prevenir DoS.
+6. **Fase 5 (SPED Fiscal e UX SaaS) - CONCLUÍDA:** Pivot de negócio para vertical única de serviços (NFS-e SaaS). Refatoração completa da UI/UX da aplicação inteira (Sidebars Modernas, Privacy Mode/Modo Ocultar Sensível). Criação do módulo de exportação SPED (.txt) em layout posicional estruturado para sistemas contábeis.
 
 ## 3. Tecnologias e Ferramentas (Stack)
 
-* **Frontend (Next.js 14 / React):** Interface de usuário com painel de controle SaaS, utilizando TypeScript e Tailwind CSS v4.
-* **Backend A (Python 3.12 / FastAPI):** Construção rápida e ideal para integração com bibliotecas nativas de manipulação de PDF e OCR (`PyMuPDF`, `pytesseract`).
+* **Frontend (Next.js 14 / React):** Interface de usuário rica, Tailwind CSS (Glassmorphism, Dark/Light Mode, Interatividade de UI), TypeScript.
+* **Backend A (Python 3.12 / FastAPI):** Construção ideal para integração com bibliotecas de PDF e OCR (`PyMuPDF`, `reportlab`, `pytesseract`).
 * **Backend B (Java 21 / Spring Boot 3):** Reconstrução do backend para alta escalabilidade e tipagem forte em ambiente enterprise. Utiliza `Apache PDFBox`.
 * **Banco de Dados:** Padrão Microserviços (Auth DB e App DB) utilizando SQLite/PostgreSQL, mapeados via SQLAlchemy (Python) e Hibernate/JPA (Java).
 
@@ -31,57 +30,32 @@ O **NFSe SaaS Platform** atua como um sistema centralizador e gerenciador de not
 
 ```text
 NFSe/
-├── frontend/             # Aplicação Next.js (Dashboard, UI SaaS Dark/Light mode)
-├── backend-python/       # API Core e Worker de OCR em Python
+├── frontend/             # Aplicação Next.js (Dashboard, SaaS UI Dark/Light)
+├── backend-python/       # API Core e Worker (SPED, Emissão, Fechamento)
 ├── backend-java/         # API Core em Java Spring Boot (Fase 2)
-├── uploads/              # Diretório raiz para armazenamento de PDFs (Compartilhado)
+├── uploads/              # Diretório raiz para armazenamento (Compartilhado)
 ├── auth.db               # Banco de dados central de Autenticação (Compartilhado)
-└── nfse.db               # Banco de dados de Notas Fiscais (Compartilhado)
+└── nfse.db               # Banco de dados de Aplicação / OS (Compartilhado)
 ```
 
-## 5. Arquitetura do Backend
+## 5. Arquitetura e Fluxos
 
-A plataforma foi desenhada para ser executada perfeitamente com qualquer um dos Backends (Python ou Java).
+A plataforma foi desenhada para executar perfeitamente com qualquer um dos Backends, e suporta fluxo complexo de agregação e geração de arquivos contábeis.
 
-### 5.1. Arquitetura Java (Fase 2 - Atual)
-
-A implementação em Java substitui dependências nativas de OCR por bibliotecas Java (`Apache PDFBox`), facilitando o deploy e evitando quebras de ambiente no Windows/Linux. Além disso, introduz o robusto `Spring Security` para a barreira do JWT.
-
+### Fluxo de Fechamento & SPED
 ```mermaid
 flowchart TD
-    UI[Frontend Next.js] --> |REST API / POST| Dispatcher{Spring DispatcherServlet}
-    Dispatcher --> |Filtro JWT| Security[Spring Security Filter Chain]
-    Security --> Controller[Controllers / API]
+    UI[Frontend Next.js] --> |POST /reports/| BackgroundTask
+    UI --> |GET /sped/{mês}| DownloadSped
     
-    Controller --> |Dual DataSource / Hibernate| DB
+    BackgroundTask --> |SQL Alchemy| FetchInvoices[(App DB)]
+    BackgroundTask --> |PyMuPDF| MergePDFs(Merge de Anexos)
+    BackgroundTask --> |ReportLab| GenDashboard(Dashboard Vetorial PDF)
+    GenDashboard --> SaveFile[(Sistema de Arquivos)]
+    SaveFile --> |Salva Path| CacheDB[(Tabela de Cache 24h)]
     
-    subgraph Bancos de Dados
-        DB_Auth[(Auth DB)]
-        DB_App[(App DB / Invoices)]
-    end
-    DB --> DB_Auth
-    DB --> DB_App
-    
-    Controller --> |Upload PDF NFS-e/NF-e| PDFService[PdfExtractionService]
-    PDFService --> |Apache PDFBox| NativeText(Extração de Texto Digital Nativo)
-    NativeText --> Parser[Heurísticas / RegEx Inteligente]
-    Parser --> |JSON Extraído| DB_App
-```
-
-### 5.2. Arquitetura Python (Fase 1)
-
-```mermaid
-flowchart TD
-    UI[Frontend Next.js] --> |REST API| API{FastAPI Gateway}
-    API --> |CRUD & Auth / SQLAlchemy| AuthDB[(Banco: Auth)]
-    API --> |Isolamento Tenant| AppDB[(Banco: App Invoices)]
-    
-    API --> |Upload PDF NFS-e/NF-e| OCREngine[Serviço de OCR]
-    OCREngine --> |PyMuPDF| NativeText(Extração de Texto Digital Nativo)
-    NativeText -.-> |Fallback| Tesseract(Tesseract OCR Engine)
-    NativeText --> Parser[Heurísticas / RegEx Inteligente]
-    Tesseract --> Parser
-    Parser --> |JSON Extraído| AppDB
+    DownloadSped --> |String Posicional TXT| TXTGenerator[Layout SPED Fiscal]
+    TXTGenerator --> UI
 ```
 
 ## 6. Execução e Variáveis de Ambiente
@@ -110,7 +84,7 @@ O projeto agora suporta troca de banco de dados (Ex: SQLite para PostgreSQL) e p
     cd backend-java
     ./mvnw spring-boot:run
     ```
-3. **Backend (Python - Alternativa):** 
+3. **Backend (Python - Alternativa Recomendada):** 
     ```bash
     cd backend-python
     venv\Scripts\activate
@@ -119,15 +93,13 @@ O projeto agora suporta troca de banco de dados (Ex: SQLite para PostgreSQL) e p
 
 ## 7. Motivação e Escolhas Arquiteturais (Trade-offs)
 
-* **Diretórios Centralizados:** O banco de dados e os uploads foram movidos para a raiz do projeto. Isso permite que tanto o Backend em Python quanto o Backend em Java leiam/escrevam exatamente no mesmo disco sem conflitos de caminho (Pathing), simulando a realidade de um Volume Compartilhado no Docker ou um S3 Bucket em Cloud.
-* **Apache PDFBox no Java:** Em vez de fazer uma chamada externa (JNI) pesada para o Tesseract no Java, optou-se pela extração em memória. Como a maioria das NFS-e são geradas digitalmente, o ganho de velocidade  supera a complexidade do OCR.
-* **Interoperabilidade de Contratos (Jackson SNAKE_CASE):** Para garantir que o Frontend (Next.js) consuma a API Java da mesma forma que consumia a API Python (FastAPI), foi injetada a configuração `spring.jackson.property-naming-strategy: SNAKE_CASE` no Spring Boot. Isso converte nativamente todos os DTOs e Modelos CamelCase do Java (`invoiceNumber`) para SnakeCase (`invoice_number`), impedindo quebras de tipagem no Front-end sem poluir as Entidades Java com anotações `@JsonProperty`.
-* **Servidor de Arquivos Estáticos Seguros (NIO Paths):** A resolução de pastas físicas via Spring Boot no Windows é suscetível a erros de caminho (404). Foi implementado a injeção do pacote `java.nio.file.Paths` dentro da classe `WebConfig`, forçando o encapsulamento Universal de URI (`file:///...`). Isso torna a visualização e armazenamento de PDFs do sistema compatível em qualquer Sistema Operacional (Windows, Mac ou Linux Server).
-* **FastAPI vs Spring Boot:** O projeto demonstra a flexibilidade de microsserviços. A camada de segurança, JWT e Banco de Dados estão rigorosamente mapeadas em ambos, permitindo que a empresa escolha a linguagem ideal para escalar.
-* **PKI Mockada (Assinatura RSA):** Para demonstrar proficiência em segurança da informação sem depender de certificados A1 reais (pagos) ou da instabilidade do ambiente de homologação da Receita Federal, foi criado um script Python embutido (`generate_mock_cert.py`) utilizando a biblioteca `cryptography`. Ele emite um par de chaves `.pem` de 2048-bits. O backend então gera o XML da NFS-e e assina digitalmente (XML Signature) usando a biblioteca `signxml`, garantindo a integridade criptográfica idêntica a de um e-CNPJ real.
-* **Cache Reativo e Prevenção de DoS (Módulo Relatórios):** A geração do Fechamento Mensal exige alto processamento do servidor (cálculos vetoriais de gráficos e merge de múltiplos anexos PDF em disco). Para impedir esgotamento de recursos (Denial of Service acidental), a arquitetura joga a tarefa pesada para processamento assíncrono (`BackgroundTasks` do FastAPI) e armazena a string do arquivo gerado numa tabela normalizada (`reports`). Se o usuário solicitar o relatório mais de uma vez nas últimas 24 horas, o backend intercepta e devolve a referência ao arquivo em disco instantaneamente (O(1)), custo zero de CPU.
+* **Privacy Mode Global (UI/UX):** Para resolver o problema de gravação de tela em call com clientes (apresentação do SaaS), o frontend introduziu um "Modo Privacidade" (Ícone do Olho) na barra superior que oblitera instantaneamente todos os valores monetários (`R$ ****,**`) e CPFs/CNPJs das tabelas, preservando LGPD e segredos de faturamento. Esse estado persiste via `localStorage`.
+* **Exportação SPED (.txt) Dinâmica:** Sistemas contábeis operam via arquivos de texto (tamanho fixo ou pipes `|`). O gerador SPED foi isolado numa rota dedicada, retornando diretamente um `.txt` codificado com suporte a download instantâneo via Browser Blob.
+* **PKI Mockada (Assinatura RSA):** Para demonstrar proficiência em segurança da informação sem depender de certificados A1 reais (pagos) ou instabilidade de homologação SEFAZ, o script `generate_mock_cert.py` emite chaves `.pem` e o backend assina o XML usando `signxml` (XML Signature).
+* **Cache Reativo e Prevenção de DoS (Relatórios):** A geração de Fechamento exige cálculos vetoriais. Para impedir o esgotamento de CPU, a `BackgroundTasks` joga a carga assíncrona, salva em disco e atualiza a referência na tabela `reports`. Requisições do mesmo mês num ciclo de 24 horas são interceptadas no banco em O(1), custando zero CPU extra.
+* **Interoperabilidade de Contratos (SNAKE_CASE Java):** O backend Java utiliza o `spring.jackson.property-naming-strategy: SNAKE_CASE` para equalizar a resposta dos DTOs com as respostas do Python, prevenindo a quebra de tipagem do frontend consumindo APIs diferentes.
 
-## 8. Próximos Passos (Backlog)
+## 8. Próximos Passos (Backlog Futuro)
 
-* **[Fase 5] Emissor de NF-e (Produto):** Implementação da emissão de notas de produto, utilizando assinaturas A1 e webservices das SEFAZ estaduais.
-* **[Fase 6] Exportação SPED Fiscal:** Geração de relatórios e exportação magnética dos registros fiscais das notas armazenadas no período (Inbound/Outbound).
+* **Assinatura PKCS#12 Real:** Migrar a infraestrutura do simulador de RSA `.pem` para consumir certificados A1 `.pfx / .p12` de clientes em produção.
+* **Webhooks e Mensageria:** Integração com RabbitMQ / Redis Pub/Sub para notificar o frontend em tempo real (via SSE ou WebSocket) sobre a conclusão da geração dos relatórios massivos de fim de mês.
