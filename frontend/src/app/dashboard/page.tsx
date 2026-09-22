@@ -201,7 +201,7 @@ export default function DashboardPage() {
   const successCount = invoices.filter(i => i.status === 'PROCESSADO' || i.status === 'PROCESSED').length;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 transition-colors duration-200 flex">
+    <div className="min-h-screen bg-gradient-to-tr from-indigo-50/50 via-white to-blue-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors duration-200 flex">
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col shadow-sm">
         <div className="p-6 border-b border-gray-100 dark:border-gray-700">
           <h1 className="text-xl font-black bg-gradient-to-r from-indigo-600 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 bg-clip-text text-transparent tracking-tight">VeVOn<span className="font-light text-gray-400 dark:text-gray-500"> NFSe</span></h1>
@@ -222,13 +222,13 @@ export default function DashboardPage() {
         </nav>
       </aside>
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative"><div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/5 blur-3xl pointer-events-none" /><div className="absolute top-[-10%] right-[-5%] w-[30%] h-[30%] rounded-full bg-blue-500/5 dark:bg-blue-500/5 blur-3xl pointer-events-none" />
         <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 p-4 sticky top-0 z-10 flex justify-between items-center px-4 sm:px-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Visão Geral</h2>
           <div className="flex items-center gap-4">
             <button 
               onClick={toggleSensitive} 
-              className="text-sm p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors dark:text-white"
+              className="text-gray-500 dark:text-gray-400 text-sm p-2 rounded-full hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white transition-all"
               title={hideSensitive ? "Mostrar Valores" : "Ocultar Valores"}
             >
               {hideSensitive ? (
@@ -239,7 +239,7 @@ export default function DashboardPage() {
             </button>
             <button 
               onClick={toggleDarkMode} 
-              className="text-sm p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors dark:text-white"
+              className="text-gray-500 dark:text-gray-400 text-sm p-2 rounded-full hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white transition-all"
               title="Alternar Tema"
             >
               {darkMode ? "☀️" : "🌙"}
@@ -256,7 +256,7 @@ export default function DashboardPage() {
         <main className="flex-1 p-4 sm:p-8 max-w-[1920px] mx-auto w-full grid grid-cols-1 xl:grid-cols-4 gap-8 text-gray-800 dark:text-gray-100 overflow-y-auto custom-scrollbar">
           
           <div className="xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-8 mb-4">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Total de Notas</p>
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-blue-600 dark:text-blue-400">
@@ -266,7 +266,7 @@ export default function DashboardPage() {
               <h3 className="text-5xl font-extrabold text-gray-800 dark:text-white">{totalInvoices}</h3>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Valor Processado</p>
                 <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
@@ -278,7 +278,7 @@ export default function DashboardPage() {
               </h3>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center gap-3">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 hover:shadow-md transition-all flex flex-col justify-center gap-3">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Fechamento Mensal</p>
                 <input type="month" value={reportMonth} onChange={e => {setReportMonth(e.target.value); setReportStatus("IDLE"); setReportUrl("");}} className="p-1 rounded bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm outline-none font-medium text-gray-800 dark:text-white"/>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="xl:col-span-1 print:hidden">
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-8">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 sticky top-8">
               <h2 className="text-2xl font-extrabold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
                 <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                 Nova Nota
@@ -369,7 +369,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="xl:col-span-3">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-full">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 h-full">
               <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-gray-100">Histórico de Documentos</h2>
               
               <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">

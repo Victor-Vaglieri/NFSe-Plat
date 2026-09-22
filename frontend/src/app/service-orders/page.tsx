@@ -115,7 +115,7 @@ export default function ServiceOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 transition-colors duration-200 flex">
+    <div className="min-h-screen bg-gradient-to-tr from-indigo-50/50 via-white to-blue-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors duration-200 flex">
       {/* Sidebar idêntica à do Dashboard */}
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 hidden lg:flex flex-col shadow-sm">
         <div className="p-6 border-b border-gray-100 dark:border-gray-700">
@@ -137,7 +137,7 @@ export default function ServiceOrdersPage() {
         </nav>
       </aside>
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative"><div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-indigo-500/5 dark:bg-indigo-500/5 blur-3xl pointer-events-none" /><div className="absolute top-[-10%] right-[-5%] w-[30%] h-[30%] rounded-full bg-blue-500/5 dark:bg-blue-500/5 blur-3xl pointer-events-none" />
         <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-700 p-4 sticky top-0 z-10 flex justify-between items-center px-4 sm:px-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Faturamento</h2>
           <div className="flex items-center gap-4">
@@ -147,7 +147,7 @@ export default function ServiceOrdersPage() {
                 setHideSensitive(newMode);
                 localStorage.setItem("hideSensitive", newMode ? "true" : "false");
               }} 
-              className="text-sm p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors dark:text-white"
+              className="text-gray-500 dark:text-gray-400 text-sm p-2 rounded-full hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white transition-all"
               title={hideSensitive ? "Mostrar Valores" : "Ocultar Valores"}
             >
               {hideSensitive ? (
@@ -158,7 +158,7 @@ export default function ServiceOrdersPage() {
             </button>
             <button 
               onClick={toggleDarkMode} 
-              className="text-sm p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors dark:text-white"
+              className="text-gray-500 dark:text-gray-400 text-sm p-2 rounded-full hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white transition-all"
               title="Alternar Tema"
             >
               {darkMode ? "☀️" : "🌙"}
@@ -181,7 +181,7 @@ export default function ServiceOrdersPage() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex-1 overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-indigo-900/5 border border-indigo-50/50 dark:border-gray-700 flex-1 overflow-hidden flex flex-col">
             <div className="overflow-x-auto flex-1 custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-md sticky top-0 z-10 border-b border-gray-100 dark:border-gray-700">
