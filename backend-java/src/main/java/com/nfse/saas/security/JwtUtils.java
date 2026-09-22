@@ -34,6 +34,16 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
+    public Long getTenantIdFromHeader(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            Claims claims = Jwts.parser().verifyWith((javax.crypto.SecretKey) key()).build()
+                    .parseSignedClaims(token).getPayload();
+            return claims.get("tenant_id", Long.class);
+        }
+        return null;
+    }
+
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().verifyWith((javax.crypto.SecretKey) key()).build()
                 .parseSignedClaims(token).getPayload().getSubject();

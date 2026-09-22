@@ -1,26 +1,28 @@
 package com.nfse.saas.controllers;
 
-import com.nfse.saas.models.app.Invoice;
-import com.nfse.saas.repositories.app.InvoiceRepository;
-import com.nfse.saas.security.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-import org.springframework.web.multipart.MultipartFile;
-import com.nfse.saas.services.PdfExtractionService;
 import java.io.File;
-
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 
-import com.nfse.saas.models.app.ServiceOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.nfse.saas.models.app.Invoice;
+import com.nfse.saas.repositories.app.InvoiceRepository;
 import com.nfse.saas.repositories.app.ServiceOrderRepository;
+import com.nfse.saas.security.UserDetailsImpl;
+import com.nfse.saas.services.PdfExtractionService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController

@@ -1,16 +1,21 @@
 package com.nfse.saas.controllers;
 
-import com.nfse.saas.models.app.Contract;
-import com.nfse.saas.repositories.app.ContractRepository;
-import com.nfse.saas.security.UserDetailsImpl;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.nfse.saas.models.app.Contract;
+import com.nfse.saas.repositories.app.ContractRepository;
+import com.nfse.saas.security.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
